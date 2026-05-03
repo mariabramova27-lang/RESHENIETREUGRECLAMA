@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Решение треугольников — Интерактивная схема</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #1a1a3e, #24243e);
+    min-height: 100vh;
+    color: #e0e0e0;
+    overflow-x: hidden;
+  }
+
+  .stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* ====== PROMO BACKGROUND ELEMENTS ====== */
+  .promo-layer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; overflow: hidden;
+  }
+
+  .promo-float {
+    position: absolute;
+    opacity: 0.04;
+    color: #a78bfa;
+    font-size: 18px;
+    font-weight: 800;
+    white-space: nowrap;
+    animation: floatPromo 20s ease-in-out infinite;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .promo-float:nth-child(1) { top: 8%; left: -10%; animation-delay: 0s; animation-duration: 25s; font-size: 22px; }
+  .promo-float:nth-child(2) { top: 25%; right: -5%; animation-delay: -5s; animation-duration: 30s; font-size: 16px; }
+  .promo-float:nth-child(3) { top: 45%; left: -15%; animation-delay: -10s; animation-duration: 22s; font-size: 20px; }
+  .promo-float:nth-child(4) { top: 65%; right: -10%; animation-delay: -15s; animation-duration: 28s; font-size: 17px; }
+  .promo-float:nth-child(5) { top: 80%; left: -5%; animation-delay: -8s; animation-duration: 35s; font-size: 19px; }
+  .promo-float:nth-child(6) { top: 15%; left: 40%; animation-delay: -12s; animation-duration: 40s; font-size: 15px; }
+  .promo-float:nth-child(7) { top: 55%; left: 60%; animation-delay: -3s; animation-duration: 26s; font-size: 21px; }
+  .promo-float:nth-child(8) { top: 90%; right: 20%; animation-delay: -18s; animation-duration: 32s; font-size: 16px; }
+
+  @keyframes floatPromo {
+    0%, 100% { transform: translateX(-30px) rotate(-2deg); opacity: 0.03; }
+    50% { transform: translateX(30px) rotate(2deg); opacity: 0.06; }
+  }
+
+  /* Promo watermark triangles */
+  .promo-watermark {
+    position: absolute;
+    opacity: 0.025;
+    pointer-events: none;
+  }
+
+  /* Promo subtle badges */
+  .promo-badge {
+    position: fixed;
+    pointer-events: auto;
+    z-index: 2;
+    opacity: 0.6;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .promo-badge:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  .promo-badge-topright {
+    top: 16px; right: 16px;
+  }
+
+  .promo-badge-bottomleft {
+    bottom: 16px; left: 16px;
+  }
+
+  .promo-card {
+    background: rgba(167, 139, 250, 0.08);
+    border: 1px solid rgba(167, 139, 250, 0.12);
+    border-radius: 14px;
+    padding: 12px 16px;
+    backdrop-filter: blur(8px);
+    max-width: 220px;
+    transition: all 0.4s ease;
+  }
+
+  .promo-card:hover {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: rgba(167, 139, 250, 0.25);
+    box-shadow: 0 4px 20px rgba(167, 139, 250, 0.1);
+  }
+
+  .promo-card .promo-title {
+    font-size: 0.75em;
+    font-weight: 800;
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .promo-card .promo-text {
+    font-size: 0.72em;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .promo-card .promo-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .promo-card .promo-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background: rgba(167,139,250,0.06);
+  }
+
+  .promo-card .promo-link:hover {
+    background: rgba(167,139,250,0.18);
+    color: #c4b5fd;
+  }
+
+  .promo-card .promo-link svg {
+    flex-shrink: 0;
+  }
+
+  /* Promo subtle divider line */
+  .promo-divider {
+    position: fixed;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(167,139,250,0.08), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .promo-divider-top { top: 80px; }
+  .promo-divider-bottom { bottom: 80px; }
+
+  /* ====== MAIN CONTENT ====== */
+  .container {
+    position: relative; z-index: 3;
+    max-width: 1200px; margin: 0 auto; padding: 20px;
+  }
+
+  header {
+    text-align: center; padding: 30px 0 10px;
+  }
+
+  header h1 {
+    font-size: 2.4em; font-weight: 900;
+    background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bff6b, #6bb5ff, #ff6bf0);
+    background-size: 300% 300%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 6s ease infinite;
+    text-shadow: none;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  header .subtitle {
+    font-size: 1.1em; color: #a0a0c0; margin-top: 8px; font-weight: 600;
+  }
+
+  .info-panel {
+    text-align: center;
+    margin: 20px auto;
+    padding: 16px 30px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    max-width: 700px;
+    min-height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.5s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .info-panel.active {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.25);
+    box-shadow: 0 0 40px rgba(100, 100, 255, 0.15);
+  }
+
+  .info-panel .hint {
+    color: #8888aa; font-size: 1.05em;
+  }
+
+  .info-panel .hint .arrow { display: inline-block; animation: bounce 1.5s infinite; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .info-content {
+    display: none;
+    text-align: left;
+    width: 100%;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .info-content.show { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .info-content .category-label {
+    font-size: 0.85em; text-transform: uppercase; letter-spacing: 2px;
+    font-weight: 800; margin-bottom: 6px;
+  }
+
+  .info-content h2 {
+    font-size: 1.5em; font-weight: 800; margin-bottom: 8px;
+  }
+
+  .info-content .formula {
+    font-size: 1.4em; font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 8px 0;
+    font-family: 'Nunito', serif;
+  }
+
+  .info-content p {
+    font-size: 1em; line-height: 1.6; color: #c0c0d8; margin-top: 6px;
+  }
+
+  .info-content .example {
+    margin-top: 10px; padding: 12px 16px;
+    background: rgba(255,255,255,0.06);
+    border-left: 3px solid;
+    border-radius: 0 10px 10px 0;
+    font-size: 0.95em;
+  }
+
+  .info-content .example strong { color: #ffd93d; }
+
+  .close-btn {
+    position: absolute; top: 10px; right: 16px;
+    background: none; border: none; color: #888;
+    font-size: 1.5em; cursor: pointer;
+    transition: color 0.3s; line-height: 1;
+  }
+
+  .close-btn:hover { color: #ff6b6b; }
+
+  .main-diagram {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px auto;
+    min-height: 520px;
+  }
+
+  .svg-diagram {
+    width: 100%;
+    height: auto;
+  }
+
+  .node-group { cursor: pointer; }
+
+  .node-circle {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 15px rgba(0,0,0,0.3));
+  }
+
+  .node-group:hover .node-circle {
+    filter: drop-shadow(0 6px 25px rgba(0,0,0,0.5)) brightness(1.15);
+  }
+
+  .node-group .node-label {
+    font-weight: 800;
+    fill: #fff;
+    text-anchor: middle;
+    pointer-events: none;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .node-group .node-sublabel {
+    font-weight: 600;
+    fill: rgba(255,255,255,0.7);
+    text-anchor: middle;
+    pointer-events: none;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .node-group.active .node-circle {
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.3)) brightness(1.2);
+    stroke-width: 3;
+    stroke: #fff;
+  }
+
+  .center-triangle {
+    animation: floatTriangle 4s ease-in-out infinite;
+  }
+
+  @keyframes floatTriangle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .connection-line {
+    stroke-dasharray: 8, 6;
+    animation: dashMove 2s linear infinite;
+    opacity: 0.6;
+  }
+
+  @keyframes dashMove {
+    to { stroke-dashoffset: -28; }
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 10px 0 20px;
+  }
+
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    font-size: 0.9em; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .legend-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+  }
+
+  footer {
+    text-align: center;
+    padding: 24px 0;
+    color: #666680;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 20px;
+  }
+
+  .formula-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 20px auto;
+    max-width: 1000px;
+  }
+
+  .formula-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .formula-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 4px 0 0 4px;
+  }
+
+  .formula-card:nth-child(1)::before { background: #ff6b6b; }
+  .formula-card:nth-child(2)::before { background: #ffd93d; }
+  .formula-card:nth-child(3)::before { background: #6bff6b; }
+  .formula-card:nth-child(4)::before { background: #6bb5ff; }
+  .formula-card:nth-child(5)::before { background: #ff6bf0; }
+
+  .formula-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .formula-card .card-num {
+    font-size: 0.75em; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: #8888aa; margin-bottom: 6px;
+  }
+
+  .formula-card .card-formula {
+    font-size: 1.2em; font-weight: 700;
+    color: #fff; margin: 8px 0;
+  }
+
+  .formula-card .card-desc {
+    font-size: 0.85em; color: #a0a0b8; line-height: 1.5;
+  }
+
+  .formula-card .card-icon {
+    position: absolute; top: 16px; right: 16px;
+    opacity: 0.3;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 800;
+    margin: 30px 0 10px;
+    color: #c0c0d8;
+  }
+
+  @media (max-width: 768px) {
+    header h1 { font-size: 1.6em; }
+    .main-diagram { min-height: 400px; }
+    .formula-cards { grid-template-columns: 1fr; }
+    .info-content .formula { font-size: 1.1em; }
+    .info-content h2 { font-size: 1.2em; }
+    .promo-badge-topright { position: relative; top: 0; right: 0; margin: 10px auto; max-width: 200px; }
+    .promo-badge-bottomleft { display: none; }
+    .promo-float { display: none; }
+    .promo-divider { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- ====== PROMO BACKGROUND LAYER ====== -->
+<div class="promo-layer">
+  <div class="promo-float">ОГЭ • ЕГЭ • Мягкая математика • подготовка к экзаменам</div>
+  <div class="promo-float">Мария Абрамова • репетитор • математика</div>
+  <div class="promo-float">Мягкая математика • vk.com/smartskillsmaria</div>
+  <div class="promo-float">ОГЭ • ЕГЭ • алгебра • геометрия • подготовка</div>
+  <div class="promo-float">smartskills_maria • индивидуальные занятия</div>
+  <div class="promo-float">Мягкая математика • разобрался — сдал</div>
+  <div class="promo-float">ЕГЭ • ОГЭ • ВКР • олимпиады • Мария Абрамова</div>
+  <div class="promo-float">подготовка к экзаменам • мягкая математика</div>
+
+  <!-- Decorative watermarks -->
+  <svg class="promo-watermark" style="top:20%;left:5%;" width="120" height="120" viewBox="0 0 120 120">
+    <polygon points="60,10 110,110 10,110" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="60" y="90" fill="#a78bfa" font-size="10" text-anchor="middle" font-weight="800">ММ</text>
+  </svg>
+  <svg class="promo-watermark" style="top:60%;right:8%;" width="100" height="100" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#ffd93d" stroke-width="1"/>
+    <text x="50" y="55" fill="#ffd93d" font-size="11" text-anchor="middle" font-weight="800">ОГЭ</text>
+  </svg>
+  <svg class="promo-watermark" style="bottom:25%;left:15%;" width="100" height="100" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#6bff6b" stroke-width="1"/>
+    <text x="50" y="55" fill="#6bff6b" font-size="11" text-anchor="middle" font-weight="800">ЕГЭ</text>
+  </svg>
+  <svg class="promo-watermark" style="top:40%;right:25%;" width="80" height="80" viewBox="0 0 80 80">
+    <polygon points="40,8 72,68 8,68" fill="none" stroke="#6bb5ff" stroke-width="1"/>
+    <text x="40" y="58" fill="#6bb5ff" font-size="8" text-anchor="middle" font-weight="800">ММ</text>
+  </svg>
+</div>
+
+<div class="promo-divider promo-divider-top"></div>
+<div class="promo-divider promo-divider-bottom"></div>
+
+<!-- Promo badge top-right -->
+<div class="promo-badge promo-badge-topright">
+  <div class="promo-card">
+    <div class="promo-title">🎓 Мягкая математика</div>
+    <div class="promo-text">Подготовка к ОГЭ, ЕГЭ и олимпиадам. Индивидуальные занятия с Марией Абрамовой</div>
+    <div class="promo-links">
+      <a href="https://vk.com/smartskillsmaria" target="_blank" class="promo-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.598-.189 1.366 1.26 2.18 1.817.616.42 1.084.328 1.084.328l2.175-.03s1.14-.071.599-.97c-.044-.074-.314-.661-1.618-1.87-1.365-1.265-1.182-1.06.462-3.246.999-1.33 1.398-2.142 1.273-2.489-.12-.332-.856-.244-.856-.244l-2.445.015s-.181-.025-.316.056c-.132.079-.217.263-.217.263s-.39 1.038-.91 1.92c-1.097 1.86-1.537 1.958-1.717 1.842-.42-.27-.315-1.084-.315-1.662 0-1.808.274-2.56-.533-2.756-.268-.065-.465-.108-1.15-.115-.878-.009-1.62.003-2.04.209-.28.137-.497.442-.365.46.163.022.532.1.728.366.253.344.244 1.115.244 1.115s.145 2.128-.34 2.39c-.332.18-.788-.188-1.767-1.874-.502-.865-.88-1.817-.88-1.817s-.073-.179-.203-.275c-.158-.116-.378-.153-.378-.153l-2.323.015s-.349.01-.477.161c-.114.135-.009.413-.009.413s1.82 4.258 3.879 6.403c1.887 1.965 4.029 1.835 4.029 1.835h.972z"/></svg>
+        Группа ВКонтакте
+      </a>
+      <a href="https://vk.com/smartskills_maria" target="_blank" class="promo-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Написать Марии
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Promo badge bottom-left -->
+<div class="promo-badge promo-badge-bottomleft">
+  <div class="promo-card">
+    <div class="promo-title"> Записывайся!</div>
+    <div class="promo-text">Разбираем всё: от базовых тем до олимпиадных задач</div>
+    <div class="promo-links">
+      <a href="https://vk.com/smartskillsmaria" target="_blank" class="promo-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.598-.189 1.366 1.26 2.18 1.817.616.42 1.084.328 1.084.328l2.175-.03s1.14-.071.599-.97c-.044-.074-.314-.661-1.618-1.87-1.365-1.265-1.182-1.06.462-3.246.999-1.33 1.398-2.142 1.273-2.489-.12-.332-.856-.244-.856-.244l-2.445.015s-.181-.025-.316.056c-.132.079-.217.263-.217.263s-.39 1.038-.91 1.92c-1.097 1.86-1.537 1.958-1.717 1.842-.42-.27-.315-1.084-.315-1.662 0-1.808.274-2.56-.533-2.756-.268-.065-.465-.108-1.15-.115-.878-.009-1.62.003-2.04.209-.28.137-.497.442-.365.46.163.022.532.1.728.366.253.344.244 1.115.244 1.115s.145 2.128-.34 2.39c-.332.18-.788-.188-1.767-1.874-.502-.865-.88-1.817-.88-1.817s-.073-.179-.203-.275c-.158-.116-.378-.153-.378-.153l-2.323.015s-.349.01-.477.161c-.114.135-.009.413-.009.413s1.82 4.258 3.879 6.403c1.887 1.965 4.029 1.835 4.029 1.835h.972z"/></svg>
+        smartskillsmaria
+      </a>
+      <a href="https://vk.com/smartskills_maria" target="_blank" class="promo-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        Мария Абрамова
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MAIN CONTENT ====== -->
+<div class="container">
+  <header>
+    <h1>🔺 Решение треугольников</h1>
+    <p class="subtitle">Интерактивная схема для учащихся 7–11 классов</p>
+  </header>
+
+  <div class="info-panel" id="infoPanel">
+    <div class="hint" id="hintText">
+      <span class="arrow">👆</span> Нажмите на любой элемент схемы или карточку формулы, чтобы узнать больше
+    </div>
+    <div class="info-content" id="infoContent"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6b6b;"></div>Площадь через высоту</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd93d;"></div>Площадь через две стороны</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6bff6b;"></div>Формула Герона</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6bb5ff;"></div>Через вписанную окружность</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff6bf0;"></div>Через описанную окружность</div>
+  </div>
+
+  <div class="main-diagram" id="mainDiagram">
+    <svg class="svg-diagram" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#ff9a9e;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#ffd93d;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#ffe066;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#6bff6b;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#90ee90;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#6bb5ff;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#90caf9;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#ff6bf0;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#f48fb1;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+
+      <!-- Connection lines -->
+      <line class="connection-line" x1="500" y1="200" x2="160" y2="120" stroke="#ff6b6b" stroke-width="2.5" opacity="0.5"/>
+      <line class="connection-line" x1="500" y1="250" x2="130" y2="280" stroke="#ffd93d" stroke-width="2.5" opacity="0.5"/>
+      <line class="connection-line" x1="500" y1="300" x2="170" y2="400" stroke="#6bff6b" stroke-width="2.5" opacity="0.5"/>
+      <line class="connection-line" x1="500" y1="250" x2="840" y2="130" stroke="#6bb5ff" stroke-width="2.5" opacity="0.5"/>
+      <line class="connection-line" x1="500" y1="280" x2="830" y2="350" stroke="#ff6bf0" stroke-width="2.5" opacity="0.5"/>
+
+      <!-- Node 1: S = 1/2 * a * ha -->
+      <g class="node-group" data-node="1" transform="translate(160, 120)">
+        <circle class="node-circle" r="52" fill="url(#grad1)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text class="node-label" y="-8" font-size="13">S = ½ · a · hₐ</text>
+        <text class="node-sublabel" y="14" font-size="10">через высоту</text>
+        <polygon points="-38,-36 -28,-36 -33,-26" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.6)" stroke-width="0.5"/>
+        <line x1="-33" y1="-26" x2="-33" y2="-36" stroke="rgba(255,255,255,0.6)" stroke-width="0.8" stroke-dasharray="2,1"/>
+      </g>
+
+      <!-- Node 2: S = 1/2 * a * b * sin γ -->
+      <g class="node-group" data-node="2" transform="translate(130, 280)">
+        <circle class="node-circle" r="55" fill="url(#grad2)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text class="node-label" y="-8" font-size="11">S = ½·a·b·sin γ</text>
+        <text class="node-sublabel" y="14" font-size="10">две стороны + угол</text>
+        <polygon points="-38,-36 -22,-36 -30,-22" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.6)" stroke-width="0.5"/>
+      </g>
+
+      <!-- Node 3: Formula Heron -->
+      <g class="node-group" data-node="3" transform="translate(170, 400)">
+        <circle class="node-circle" r="58" fill="url(#grad3)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text class="node-label" y="-8" font-size="11">S = (p·(p-a)·(p-b)·(p-c))</text>
+        <text class="node-sublabel" y="14" font-size="10">Формула Герона</text>
+        <polygon points="-38,-36 -18,-36 -28,-20" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.6)" stroke-width="0.5"/>
+      </g>
+
+      <!-- Center: Triangle -->
+      <g class="center-triangle" transform="translate(500, 250)">
+        <polygon points="0,-90 -78,55 78,55" fill="rgba(120,80,255,0.15)" stroke="#a78bfa" stroke-width="2.5" stroke-linejoin="round"/>
+        <text fill="#ff6b6b" font-size="16" font-weight="700" text-anchor="middle" x="-48" y="-5">a</text>
+        <text fill="#ffd93d" font-size="16" font-weight="700" text-anchor="middle" x="48" y="-5">b</text>
+        <text fill="#6bff6b" font-size="16" font-weight="700" text-anchor="middle" x="0" y="70">c</text>
+        <text fill="#6bb5ff" font-size="14" font-weight="700" text-anchor="middle" x="-55" y="35">α</text>
+        <text fill="#ff6bf0" font-size="14" font-weight="700" text-anchor="middle" x="55" y="35">β</text>
+        <text fill="#a78bfa" font-size="14" font-weight="700" text-anchor="middle" x="0" y="-50">γ</text>
+        <text fill="rgba(255,255,255,0.5)" font-size="12" font-weight="600" text-anchor="middle" x="0" y="-100">A</text>
+        <text fill="rgba(255,255,255,0.5)" font-size="12" font-weight="600" text-anchor="middle" x="-95" y="65">B</text>
+        <text fill="rgba(255,255,255,0.5)" font-size="12" font-weight="600" text-anchor="middle" x="95" y="65">C</text>
+        <text fill="rgba(255,255,255,0.7)" font-size="13" font-weight="800" text-anchor="middle" y="5">ТРЕУГОЛЬНИК</text>
+      </g>
+
+      <!-- Node 4: Law of Sines -->
+      <g class="node-group" data-node="4" transform="translate(840, 130)">
+        <circle class="node-circle" r="60" fill="url(#grad4)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text class="node-label" y="-12" font-size="11">a/sin α = b/sin β = c/sin γ</text>
+        <text class="node-label" y="5" font-size="12">= 2R</text>
+        <text class="node-sublabel" y="25" font-size="10">Теорема синусов</text>
+        <circle cx="-30" cy="-35" r="8" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-dasharray="3,2"/>
+      </g>
+
+      <!-- Node 5: Law of Cosines -->
+      <g class="node-group" data-node="5" transform="translate(830, 350)">
+        <circle class="node-circle" r="60" fill="url(#grad5)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text class="node-label" y="-10" font-size="11">c² = a² + b² − 2ab·cos γ</text>
+        <text class="node-sublabel" y="14" font-size="10">Теорема косинусов</text>
+        <polygon points="-36,-32 -18,-32 -27,-18" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.6)" stroke-width="0.5"/>
+      </g>
+
+      <circle cx="500" cy="250" r="130" fill="none" stroke="rgba(167,139,250,0.08)" stroke-width="1" stroke-dasharray="6,8"/>
+      <circle cx="500" cy="250" r="200" fill="none" stroke="rgba(167,139,250,0.04)" stroke-width="1" stroke-dasharray="4,10"/>
+    </svg>
+  </div>
+
+  <p class="section-title"> Все 5 способов найти площадь</p>
+
+  <div class="formula-cards" id="formulaCards">
+    <div class="formula-card" data-card="1">
+      <span class="card-num">Способ 1</span>
+      <div class="card-formula">S = ½ · a · hₐ</div>
+      <div class="card-desc">Площадь равна половине произведения основания на высоту, опущенную на него. Самый простой способ!</div>
+      <svg class="card-icon" width="30" height="30" viewBox="0 0 30 30">
+        <polygon points="5,25 15,5 25,25" fill="none" stroke="#ff6b6b" stroke-width="2"/>
+        <line x1="15" y1="25" x2="15" y2="5" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <line x1="15" y1="22" x2="18" y2="22" stroke="#ff6b6b" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="formula-card" data-card="2">
+      <span class="card-num">Способ 2</span>
+      <div class="card-formula">S = ½ · a · b · sin γ</div>
+      <div class="card-desc">Если знаешь две стороны и угол между ними — используй эту формулу. Удобно, когда высота неизвестна.</div>
+      <svg class="card-icon" width="30" height="30" viewBox="0 0 30 30">
+        <polygon points="5,25 12,5 25,20" fill="none" stroke="#ffd93d" stroke-width="2"/>
+        <text x="16" y="18" fill="#ffd93d" font-size="8" font-weight="bold">γ</text>
+      </svg>
+    </div>
+
+    <div class="formula-card" data-card="3">
+      <span class="card-num">Способ 3</span>
+      <div class="card-formula">S = √(p·(p−a)·(p−b)·(p−c))</div>
+      <div class="card-desc">Формула Герона: знаешь все 3 стороны? Найди полупериметр p = (a+b+c)/2 и подставь. Магия!</div>
+      <svg class="card-icon" width="30" height="30" viewBox="0 0 30 30">
+        <polygon points="3,25 15,5 27,25" fill="none" stroke="#6bff6b" stroke-width="2"/>
+        <text x="15" y="22" fill="#6bff6b" font-size="7" font-weight="bold" text-anchor="middle">p</text>
+      </svg>
+    </div>
+
+    <div class="formula-card" data-card="4">
+      <span class="card-num">Способ 4</span>
+      <div class="card-formula">S = p · r</div>
+      <div class="card-desc">Полупериметр умножь на радиус вписанной окружности. Коротко и красиво!</div>
+      <svg class="card-icon" width="30" height="30" viewBox="0 0 30 30">
+        <polygon points="5,25 15,5 25,25" fill="none" stroke="#6bb5ff" stroke-width="2"/>
+        <circle cx="15" cy="17" r="5" fill="none" stroke="#6bb5ff" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div class="formula-card" data-card="5">
+      <span class="card-num">Способ 5</span>
+      <div class="card-formula">S = a·b·c / (4R)</div>
+      <div class="card-desc">Если известен радиус описанной окружности R — перемножь все стороны и раздели на 4R.</div>
+      <svg class="card-icon" width="30" height="30" viewBox="0 0 30 30">
+        <polygon points="5,25 15,5 25,25" fill="none" stroke="#ff6bf0" stroke-width="2"/>
+        <circle cx="15" cy="15" r="10" fill="none" stroke="#ff6bf0" stroke-width="1" stroke-dasharray="3,2"/>
+      </svg>
+    </div>
+  </div>
+
+  <footer>
+    Учебный проект для 7–9 кл | Тема: Решение треугольников
+  </footer>
+</div>
+
+<script>
+(function() {
+  const starsContainer = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 3 + 1;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    starsContainer.appendChild(star);
+  }
+
+  const infoData = {
+    1: {
+      category: 'Площадь треугольника',
+      color: '#ff6b6b',
+      title: 'Через основание и высоту',
+      formula: 'S = ½ · a · hₐ',
+      formulaBg: 'rgba(255,107,107,0.15)',
+      description: 'Это самый простой способ найти площадь треугольника. Представь: если разрезать прямоугольник по диагонали, получится два одинаковых треугольника. Площадь каждого — ровно половина площади прямоугольника!',
+      example: ' <strong>Пример:</strong> Сторона a = 10 см, высота h = 6 см.<br>S = ½ · 10 · 6 = <strong>30 см²</strong>',
+      icon: ''
+    },
+    2: {
+      category: 'Площадь треугольника',
+      color: '#ffd93d',
+      title: 'Через две стороны и угол',
+      formula: 'S = ½ · a · b · sin γ',
+      formulaBg: 'rgba(255,217,61,0.15)',
+      description: 'Когда тебе известны две стороны треугольника и угол между ними — эта формула идеальна! Не нужно искать высоту — просто подставь значения. Функция sin (синус) можно найти по таблице или калькулятору.',
+      example: '📝 <strong>Пример:</strong> a = 8, b = 6, γ = 30°.<br>sin 30° = 0,5<br>S = ½ · 8 · 6 · 0,5 = <strong>12</strong>',
+      icon: ''
+    },
+    3: {
+      category: 'Площадь треугольника',
+      color: '#6bff6b',
+      title: 'Формула Герона',
+      formula: 'S = √(p·(p−a)·(p−b)·(p−c))',
+      formulaBg: 'rgba(107,255,107,0.15)',
+      description: 'Герон Александрийский придумал эту формулу почти 2000 лет назад! Если ты знаешь все три стороны треугольника, сначала найди полупериметр p = (a + b + c) / 2, а потом подставь в формулу. Она работает всегда!',
+      example: ' <strong>Пример:</strong> a=3, b=4, c=5<br>p = (3+4+5)/2 = 6<br>S = √(6·3·2·1) = √36 = <strong>6</strong>',
+      icon: '🧮'
+    },
+    4: {
+      category: 'Теорема синусов',
+      color: '#6bb5ff',
+      title: 'Теорема синусов',
+      formula: 'a/sin α = b/sin β = c/sin γ = 2R',
+      formulaBg: 'rgba(107,181,255,0.15)',
+      description: 'Эта теорема связывает стороны треугольника с углами и радиусом описанной окружности (R). Она невероятно полезна, когда нужно найти сторону или угол треугольника. Отношение каждой стороны к синусу противоположного угла — одно и то же!',
+      example: '📝 <strong>Пример:</strong> a = 10, α = 30°, β = 45°.<br>10/sin 30° = b/sin 45°<br>b = 10 · sin 45° / sin 30° ≈ <strong>14,14</strong>',
+      icon: '⭕'
+    },
+    5: {
+      category: 'Теорема косинусов',
+      color: '#ff6bf0',
+      title: 'Теорема косинусов',
+      formula: 'c² = a² + b² − 2ab·cos γ',
+      formulaBg: 'rgba(255,107,240,0.15)',
+      description: 'Это обобщённая теорема Пифагора! Если γ = 90°, то cos 90° = 0 и формула превращается в обычную a² + b² = c². Но она работает для ЛЮБОГО треугольника. Зная две стороны и угол между ними, можно найти третью сторону.',
+      example: '📝 <strong>Пример:</strong> a=3, b=4, γ=60°<br>c² = 9 + 16 − 2·3·4·cos 60°<br>c² = 25 − 12 = 13<br>c = 13 ≈ <strong>3,61</strong>',
+      icon: '📊'
+    }
+  };
+
+  const infoPanel = document.getElementById('infoPanel');
+  const hintText = document.getElementById('hintText');
+  const infoContent = document.getElementById('infoContent');
+  const mainDiagram = document.getElementById('mainDiagram');
+  const formulaCardsContainer = document.getElementById('formulaCards');
+
+  function showInfo(nodeId) {
+    const data = infoData[nodeId];
+    if (!data) return;
+
+    hintText.style.display = 'none';
+    infoContent.classList.add('show');
+    infoPanel.classList.add('active');
+
+    infoContent.innerHTML = `
+      <button class="close-btn" onclick="this.parentElement.classList.remove('show'); this.parentElement.parentElement.classList.remove('active'); document.getElementById('hintText').style.display='block';">&times;</button>
+      <div class="category-label" style="color:${data.color};">${data.icon} ${data.category}</div>
+      <h2 style="color:${data.color};">${data.title}</h2>
+      <div class="formula" style="color:${data.color}; background:${data.formulaBg};">${data.formula}</div>
+      <p>${data.description}</p>
+      <div class="example" style="border-color:${data.color};">${data.example}</div>
+    `;
+
+    document.querySelectorAll('.node-group').forEach(g => g.classList.remove('active'));
+    const activeNode = document.querySelector(`.node-group[data-node="${nodeId}"]`);
+    if (activeNode) activeNode.classList.add('active');
+  }
+
+  function hideInfo() {
+    hintText.style.display = 'block';
+    infoContent.classList.remove('show');
+    infoPanel.classList.remove('active');
+    document.querySelectorAll('.node-group').forEach(g => g.classList.remove('active'));
+  }
+
+  document.querySelectorAll('.node-group').forEach(group => {
+    group.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const nodeId = this.getAttribute('data-node');
+      showInfo(parseInt(nodeId));
+    });
+  });
+
+  document.querySelectorAll('.formula-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const cardId = this.getAttribute('data-card');
+      showInfo(parseInt(cardId));
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!infoPanel.contains(e.target) &&
+        !mainDiagram.contains(e.target) &&
+        !formulaCardsContainer.contains(e.target)) {
+      hideInfo();
+    }
+  });
+
+  mainDiagram.addEventListener('click', function(e) {
+    if (e.target === mainDiagram || e.target.tagName === 'svg') {
+      hideInfo();
+    }
+  });
+})();
+</script>
+</body>
+</html>
+
